@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdexcept>
 #include <random>
 
@@ -51,7 +52,7 @@ private:
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> sprite;
 };
 
-Game::Game() : title{"Player Sprite"}, gen{}, rand_color{0, 255}, font_size{80},
+Game::Game() : title{"Sound Effects and Music"}, gen{}, rand_color{0, 255}, font_size{80},
                font_color{255, 255, 255, 255},
                text_str{"SDL"},
                text_rect{0, 0, 0, 0},
@@ -251,6 +252,7 @@ void initialize_sdl()
 {
     int sdl_flags = SDL_INIT_EVERYTHING;
     int img_flags = IMG_INIT_PNG;
+    int mix_flags = MIX_INIT_OGG;
 
     if (SDL_Init(sdl_flags))
     {
@@ -268,10 +270,17 @@ void initialize_sdl()
     {
         auto error = std::format("Error initialize SDL_ttf: {}", TTF_GetError());
     }
+
+    if ((Mix_Init(mix_flags) & mix_flags) != mix_flags)
+    {
+        auto error = std::format("Error initialized SDL_mixer: {}", Mix_GetError());
+        throw std::runtime_error(error);
+    }
 }
 
 void close_sdl()
 {
+    Mix_Quit();
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();

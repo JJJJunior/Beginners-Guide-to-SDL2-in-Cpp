@@ -3,7 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "E:\\msys64\\mingw64\\include",
+                "C:\\msys64\\mingw64\\include",
                 "${workspaceFolder}/src/include"
             ],
             "defines": [
@@ -16,7 +16,7 @@
             "cppStandard": "c++20",
             "intelliSenseMode": "${default}",
             "configurationProvider": "ms-vscode.makefile-tools",
-            "compilerPath": "E:/msys64/mingw64/bin/g++.exe"
+            "compilerPath": "C:\\msys64\\mingw64\\bin/g++.exe"
         }
     ],
     "version": 4
