@@ -23,6 +23,7 @@ public:
 
 private:
     void update_text();
+    void update_sprite();
 
     const std::string title;
     SDL_Event event;
@@ -35,6 +36,10 @@ private:
     const int text_vel;
     int text_xvel;
     int text_yvel;
+    SDL_Rect sprite_rect;
+    const int sprite_vel;
+
+    const Uint8 *keystate;
 
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window;
     std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)> renderer;
@@ -43,22 +48,27 @@ private:
     std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> text_surface;
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> text;
     std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> icon_surface;
+    std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> sprite;
 };
 
-Game::Game() : title{"Moving Text and Icon"}, gen{}, rand_color{0, 255}, font_size{80},
+Game::Game() : title{"Player Sprite"}, gen{}, rand_color{0, 255}, font_size{80},
                font_color{255, 255, 255, 255},
                text_str{"SDL"},
                text_rect{0, 0, 0, 0},
-               text_vel{3},
-               text_xvel{3},
-               text_yvel{3},
+               text_vel{1},
+               text_xvel{1},
+               text_yvel{1},
+               sprite_rect{0, 0, 0, 0},
+               sprite_vel{5},
+               keystate{SDL_GetKeyboardState(nullptr)},
                window(nullptr, SDL_DestroyWindow),
                renderer(nullptr, SDL_DestroyRenderer),
                backgroud(nullptr, SDL_DestroyTexture),
                font{nullptr, TTF_CloseFont},
                text_surface{nullptr, SDL_FreeSurface},
                text{nullptr, SDL_DestroyTexture},
-               icon_surface{nullptr, SDL_FreeSurface} {}
+               icon_surface{nullptr, SDL_FreeSurface},
+               sprite{nullptr, SDL_DestroyTexture} {}
 
 void Game::init()
 {
@@ -121,6 +131,19 @@ void Game::load_media()
         auto error = std::format("Error creating Texture from Surface: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
+
+    this->sprite.reset(SDL_CreateTextureFromSurface(this->renderer.get(), this->icon_surface.get()));
+    if (!this->sprite)
+    {
+        auto error = std::format("Error creating Sprite from Surface: {}", SDL_GetError());
+        throw std::runtime_error(error);
+    }
+
+    if (SDL_QueryTexture(this->sprite.get(), nullptr, nullptr, &this->sprite_rect.w, &this->sprite_rect.h))
+    {
+        auto error = std::format("Error querying Texture: {}", SDL_GetError());
+        throw std::runtime_error(error);
+    }
 }
 
 void Game::update_text()
@@ -144,6 +167,26 @@ void Game::update_text()
     else if (this->text_rect.y + this->text_rect.h > this->height)
     {
         this->text_yvel = -this->text_vel;
+    }
+}
+
+void Game::update_sprite()
+{
+    if (this->keystate[SDL_SCANCODE_LEFT] || this->keystate[SDL_SCANCODE_A])
+    {
+        this->sprite_rect.x -= this->sprite_vel;
+    }
+    if (this->keystate[SDL_SCANCODE_RIGHT || this->keystate[SDL_SCANCODE_D]])
+    {
+        this->sprite_rect.x += this->sprite_vel;
+    }
+    if (this->keystate[SDL_SCANCODE_UP || this->keystate[SDL_SCANCODE_W]])
+    {
+        this->sprite_rect.y -= this->sprite_vel;
+    }
+    if (this->keystate[SDL_SCANCODE_DOWN || this->keystate[SDL_SCANCODE_S]])
+    {
+        this->sprite_rect.y += this->sprite_vel;
     }
 }
 
@@ -178,12 +221,15 @@ void Game::run()
         }
 
         this->update_text();
+        this->update_sprite();
 
         SDL_RenderClear(this->renderer.get());
 
         SDL_RenderCopy(this->renderer.get(), this->backgroud.get(), nullptr, nullptr);
 
         SDL_RenderCopy(this->renderer.get(), this->text.get(), nullptr, &this->text_rect);
+
+        SDL_RenderCopy(this->renderer.get(), this->sprite.get(), nullptr, &this->sprite_rect);
 
         SDL_RenderPresent(this->renderer.get());
         // 1000/60  milliseconds/seconds 1second 1 frame;
