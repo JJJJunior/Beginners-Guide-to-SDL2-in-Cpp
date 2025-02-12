@@ -1,0 +1,4 @@
+1. 找到 MinGW 安装路径
+2. pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-make
+3. 点击 高级系统设置 → 环境变量 C:\msys64\mingw64\bin
+4. mingw32-make
